@@ -64,6 +64,30 @@ public class Ragdoll : NetworkBehaviour
         }
     }
 
+    // Llamar a este método desde OTRO jugador (el que golpea) para pedir que
+    // este jugador entre en ragdoll. Como quien golpea normalmente NO es el
+    // Owner de este NetworkObject, no puede llamar ActivarRagdoll directamente
+    // (esa función corta si !IsOwner). Por eso pasamos por Server -> Owner.
+    public void SolicitarRagdoll(Vector3 impulso)
+    {
+        SolicitarRagdollServerRpc(impulso);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SolicitarRagdollServerRpc(Vector3 impulso)
+    {
+        ActivarRagdollClientRpc(impulso);
+    }
+
+    [ClientRpc]
+    private void ActivarRagdollClientRpc(Vector3 impulso)
+    {
+        // Se ejecuta en todos los clientes, pero ActivarRagdoll ya filtra
+        // internamente con "if (!IsOwner) return;", así que solo el dueño
+        // real de este jugador procesa el ragdoll.
+        ActivarRagdoll(impulso);
+    }
+
     public void ActivarRagdoll(Vector3 impulso)
     {
         if (!IsOwner) return;

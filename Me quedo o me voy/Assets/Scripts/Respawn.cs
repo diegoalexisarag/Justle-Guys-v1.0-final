@@ -9,12 +9,22 @@ public class PlayerRespawn : MonoBehaviour
     private CharacterController characterController;
     private Ragdoll ragdoll;
     private Vector3 posicionInicial;
+    private SkinnedMeshRenderer[] renderersDelCuerpo;
+    private Animator animatorDelCuerpo;
 
     void Start()
     {
         characterController = GetComponent<CharacterController>();
         ragdoll = GetComponent<Ragdoll>();
         posicionInicial = transform.position;
+        renderersDelCuerpo = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+        foreach (SkinnedMeshRenderer smr in renderersDelCuerpo)
+        {
+            if (smr != null) smr.updateWhenOffscreen = true;
+        }
+
+        animatorDelCuerpo = GetComponentInChildren<Animator>(true);
+        if (animatorDelCuerpo != null) animatorDelCuerpo.cullingMode = AnimatorCullingMode.AlwaysAnimate;
     }
 
     void Update()
@@ -54,6 +64,16 @@ public class PlayerRespawn : MonoBehaviour
         {
             transform.position = posicionDestino;
         }
+
+        if (renderersDelCuerpo != null)
+        {
+            foreach (SkinnedMeshRenderer smr in renderersDelCuerpo)
+            {
+                if (smr != null) smr.updateWhenOffscreen = true;
+            }
+        }
+
+        if (animatorDelCuerpo != null) animatorDelCuerpo.cullingMode = AnimatorCullingMode.AlwaysAnimate;
     }
 
    private void OnTriggerEnter(Collider other)

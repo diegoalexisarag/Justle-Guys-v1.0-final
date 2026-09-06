@@ -1,34 +1,34 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MovimientoPorPuntos : MonoBehaviour
 {
-    [Tooltip("El primer punto de la ruta (Ej: Posición inicial)")]
     public Transform puntoA;
     
-    [Tooltip("El segundo punto de la ruta (Ej: Posición final)")]
     public Transform puntoB;
     
-    [Tooltip("Velocidad de desplazamiento de la sierra")]
     public float speed = 2f;
 
-    // Almacena hacia dónde se está moviendo actualmente
+    [Header("Empujón/Ragdoll al tocar al jugador")]
+    public float fuerzaDeEmpuje = 15f;
+    public float fuerzaVertical = 4f;
+    public float cooldownEntreGolpes = 0.5f;
+
+    private Dictionary<Rigidbody, float> ultimoGolpe = new Dictionary<Rigidbody, float>();
+
     private Transform objetivoActual;
 
     void Start()
     {
-        // Al iniciar, le decimos que se dirija al punto B
         objetivoActual = puntoB;
     }
 
     void Update()
     {
-        // 1. Movemos el objeto paso a paso hacia el objetivo
         transform.position = Vector3.MoveTowards(transform.position, objetivoActual.position, speed * Time.deltaTime);
 
-        // 2. Comprobamos si ya llegó (con un pequeño margen de error para evitar bugs de precisión)
         if (Vector3.Distance(transform.position, objetivoActual.position) < 0.1f)
         {
-            // 3. Si llegó a B, cambiamos el objetivo a A, y viceversa
             if (objetivoActual == puntoA)
             {
                 objetivoActual = puntoB;
@@ -37,6 +37,37 @@ public class MovimientoPorPuntos : MonoBehaviour
             {
                 objetivoActual = puntoA;
             }
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        controlar jugador = collision.gameObject.GetComponent<controlar>();
+        if (jugador == null) return;
+
+        if (!jugador.IsOwner) return;
+
+        Rigidbody rb = collision.gameObject.GetComponent<Rigidbody>();
+        if (rb == null) return;
+
+        if (ultimoGolpe.TryGetValue(rb, out float ultimaVez))
+        {
+            if (Time.time - ultimaVez < cooldownEntreGolpes) return;
+        }
+        ultimoGolpe[rb] = Time.time;
+
+        Vector3 direccionEmpuje = (collision.transform.position - transform.position).normalized;
+        direccionEmpuje += Vector3.up * (fuerzaVertical / Mathf.Max(fuerzaDeEmpuje, 0.01f));
+        direccionEmpuje.Normalize();
+
+        Ragdoll ragdoll = collision.gameObject.GetComponent<Ragdoll>();
+        if (ragdoll != null)
+        {
+            ragdoll.ActivarRagdoll(direccionEmpuje * fuerzaDeEmpuje);
+        }
+        else
+        {
+            rb.AddForce(direccionEmpuje * fuerzaDeEmpuje, ForceMode.Impulse);
         }
     }
 }

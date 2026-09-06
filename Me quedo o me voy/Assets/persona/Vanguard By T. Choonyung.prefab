@@ -3905,6 +3905,11 @@ MonoBehaviour:
   jumpHeight: 1
   rotateSpeed: 15
   fuerzaDeEmpuje: 55
+  fuerzaRagdollGolpeo: 10
+  rangoGolpe: 0.3
+  distanciaGolpe: 0.3
+  anguloGolpe: 90
+  porcentajeGolpe: 0.85
   tienePoderDeEmpuje:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0

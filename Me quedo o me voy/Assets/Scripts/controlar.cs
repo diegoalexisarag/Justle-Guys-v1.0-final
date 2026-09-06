@@ -8,28 +8,32 @@ using Unity.Netcode.Components;
 
 public class controlar : NetworkBehaviour {
 	
-	//public float speed = 10.0f;
 	public float currentSpeed;
 	public float airVelocity = 8f;
 	public float gravity = 10.0f;
-	//public float maxVelocityChange = 10.0f;
 	public float jumpHeight = 2.0f;
-	//public float maxFallSpeed = 20.0f;
 	public float rotateSpeed = 15f;
 	public float fuerzaDeEmpuje = 55.0f;
+	public float fuerzaRagdollGolpeo = 10f;
+
+	[Header("Golpe de mano (click izquierdo)")]
+	public float alcanceGolpe = 1.3f;
+	[Range(1f, 180f)]
+	public float anguloGolpe = 90f;
+	[Range(0f, 1f)]
+	public float porcentajeGolpe = 0.85f;
+	public float cooldownGolpe = 6f; 
+	private float proximoGolpeDisponible = 0f;
+	private Coroutine golpeCoroutine;
     public NetworkVariable<bool> tienePoderDeEmpuje = new NetworkVariable<bool>(
         false,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Owner
     );
-    private float masaRigidbody; // Caché de la masa
+    private float masaRigidbody;
 	private Vector3 moveDir;
 	private Rigidbody rb;
 	private Animator animator;
-	public AudioSource audioSource;
-	public AudioClip sonidoBaile1;
-    public AudioClip sonidoBaile2;
-    public AudioClip sonidoBaile3;
 
 	private bool isRunning;
 	private bool isMoving;
@@ -49,7 +53,6 @@ public class controlar : NetworkBehaviour {
 	public Vector3 checkPoint;
 	private bool slide = false;
 
-        // Hashes de Animación (Optimización masiva)
     private readonly int isMovingHash = Animator.StringToHash("IsMoving");
     private readonly int isRunningHash = Animator.StringToHash("IsRunning");
     private readonly int groundedHash = Animator.StringToHash("Grounded");
@@ -59,26 +62,15 @@ public class controlar : NetworkBehaviour {
     private readonly int dance01Hash = Animator.StringToHash("Dance01");
     private readonly int dance02Hash = Animator.StringToHash("Dance02");
     private readonly int golpeoHash = Animator.StringToHash("golpeo");
+    private readonly int golpeoStateHash = Animator.StringToHash("Cross Punch");
 
-    private bool estaBailando = false;
-    private Coroutine baileCoroutine;
     private Bate bate;
-	//[Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
 	public GameObject CinemachineCameraTarget;
 
-	//[Tooltip("How far in degrees can you move the camera up")]
 	public float TopClamp = 70.0f;
 
-	//[Tooltip("How far in degrees can you move the camera down")]
 	public float BottomClamp = -30.0f;
 
-	//[Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
-	//public float CameraAngleOverride = 0.0f;
-
-	//[Tooltip("For locking the camera position on all axis")]
-	//public bool LockCameraPosition = false;
-
-	//[Tooltip("Mouse look sensitivity")]
 	public float MouseSensitivity = 1.0f;
 
 	// cinemachine
@@ -93,12 +85,6 @@ public class controlar : NetworkBehaviour {
 			_cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
 	}
 	
-	
-	//bool EstaEnElSuelo (){
-	//	return Physics.Raycast(transform.position, -Vector3.up, distanciaAlSuelo + 0.1f);
-	//}
-
-	
 	void Awake () 
         {
         rb = GetComponent<Rigidbody>();
@@ -107,13 +93,11 @@ public class controlar : NetworkBehaviour {
         
         rb.freezeRotation = true;
         rb.useGravity = false;
-        masaRigidbody = rb.mass; // Guardamos la masa una sola vez al inicio
+        masaRigidbody = rb.mass;
 
         distanciaAlSuelo = GetComponent<Collider>().bounds.extents.y;
         checkPoint = transform.position;
         
-    // Cursor.visible = false;
-    // C    ursor.lockState = CursorLockMode.Locked;
     }
 	
     void FixedUpdate()
@@ -129,7 +113,6 @@ public class controlar : NetworkBehaviour {
             rb.linearVelocity = pushDir * pushForce;
         }
 
-        // Gravedad extra optimizada (sin GetComponent)
         rb.AddForce(new Vector3(0, -gravity * masaRigidbody, 0));
     }
 
@@ -157,7 +140,6 @@ public class controlar : NetworkBehaviour {
                 Cursor.lockState = CursorLockMode.Locked;
             }
 
-            // 2. Anular los controles físicos si la carrera no está en curso
             if (!carreraActiva || carreraTerminada || enPausa)
             {
                 moveDir = Vector3.zero;
@@ -165,7 +147,6 @@ public class controlar : NetworkBehaviour {
                 isRunning = false;
                 UpdateAnimations();
                 
-                // Si la carrera terminó, forzamos el frenado total para evitar deslizamientos por inercia
                 if (carreraTerminada) rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
                 
                 return;
@@ -177,7 +158,7 @@ public class controlar : NetworkBehaviour {
         currentSpeed = (isRunning && isMoving) ? runSpeed : walkSpeed;
         VerticalVelocity = rb.linearVelocity.y;
 
-        float h = Input.GetAxisRaw("Horizontal"); // GetAxisRaw elimina el input smoothing nativo (mejor respuesta)
+        float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
         Vector3 inputDir = new Vector3(h, 0, v).normalized;
@@ -195,20 +176,12 @@ public class controlar : NetworkBehaviour {
             isMoving = false;
         }
 
-        // 2. Detección de Suelo y Superficies Deslizantes
         ManejarDeteccionDeSuelo();
-
-        // 3. Inputs de Animación y Salto
         ManejarInputsAcciones();
         UpdateAnimations();
         bool seEstaMoviendo = moveDir.magnitude > 0.1f;
         bool presionoSalto = Input.GetButton("Jump");
-        //if ((seEstaMoviendo || presionoSalto) && audioSource.isPlaying)
-	    //{
-    	//    audioSource.Stop();
-	    //}
 
-        // 4. Pausa del Juego
         if(Input.GetKeyDown(KeyCode.Escape))
         {
             UIPauseManager pauseManager = FindAnyObjectByType<UIPauseManager>();
@@ -253,20 +226,17 @@ public class controlar : NetworkBehaviour {
         Vector3 targetVelocity = moveDir * (enSuelo ? currentSpeed : airVelocity);
         Vector3 velocity = rb.linearVelocity;
         
-        // Frenado preciso y responsivo
         if (moveDir == Vector3.zero && enSuelo && !slide)
         {
-            // Forzamos la velocidad horizontal a cero inmediatamente para evitar deslizamientos
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
             return;
         }
 
         Vector3 velocityChange = (targetVelocity - velocity);
-        velocityChange.y = 0; // Mantenemos intacta la velocidad vertical (gravedad/salto)
+        velocityChange.y = 0;
 
         if (!slide || (slide && velocity.magnitude < currentSpeed))
         {
-            // Usamos un multiplicador para que la aceleración en el aire sea más suave que en el suelo
             float aceleracion = enSuelo ? 1f : 0.5f; 
             rb.AddForce(velocityChange * aceleracion, ForceMode.VelocityChange);
         }
@@ -283,7 +253,6 @@ public class controlar : NetworkBehaviour {
             targetDir.y = 0;
             
             Quaternion targetRotation = Quaternion.LookRotation(targetDir);
-            // IMPORTANTE: Usar MoveRotation en lugar de transform.rotation previene los temblores de físicas
             Quaternion nuevaRotacion = Quaternion.RotateTowards(rb.rotation, targetRotation, rotateSpeed * 10f * Time.fixedDeltaTime);
             rb.MoveRotation(nuevaRotacion); 
         }
@@ -296,65 +265,82 @@ public class controlar : NetworkBehaviour {
             if (Input.GetButtonDown("Jump"))
             {
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, CalcularVelocidadVerticalSalto(), rb.linearVelocity.z);
-                //animator.SetTrigger(jumpHash);
-            }
-            
-            if (!isMoving)
-            {
-                if (Input.GetKeyDown(KeyCode.P)) {
-                    animator.SetTrigger(danceHash);
-                    IniciarBaile(sonidoBaile1);
-                }
-                if (Input.GetKeyDown(KeyCode.I)) {
-                    animator.SetTrigger(dance01Hash);
-                    animator.SetTrigger(danceHash);
-                    IniciarBaile(sonidoBaile2);
-                }
-                if (Input.GetKeyDown(KeyCode.O)) { 
-                    animator.SetTrigger(dance02Hash);
-                    animator.SetTrigger(danceHash);
-                    IniciarBaile(sonidoBaile3);
-                }
             }
         }
-        if (Input.GetMouseButtonDown(0) && enElSuelo && !estaBailando)
+        if (Input.GetMouseButtonDown(0) && enElSuelo && Time.time >= proximoGolpeDisponible)
         {
+            proximoGolpeDisponible = Time.time + cooldownGolpe;
+
             animator.SetTrigger(golpeoHash);
             bate?.Golpear();
+
+            if (golpeCoroutine != null) StopCoroutine(golpeCoroutine);
+            golpeCoroutine = StartCoroutine(EsperarYDetectarGolpe());
         }
     }
-    private void IniciarBaile(AudioClip clip)
-    {
-        estaBailando = true;
 
-        audioSource.Stop();
-        audioSource.clip = clip;
-        audioSource.Play();
-
-        if (baileCoroutine != null) StopCoroutine(baileCoroutine);
-         baileCoroutine = StartCoroutine(TerminarBaileDespuesDe(clip != null ? clip.length : 1f));
-    }
-
-    private IEnumerator TerminarBaileDespuesDe(float segundos)
-    {
-        yield return new WaitForSeconds(segundos);
-        estaBailando = false;
-    }
     private bool EstaEnElSuelo()
     {
         return Physics.Raycast(transform.position, -Vector3.up, distanciaAlSuelo + 0.1f);
+    }
+
+    private IEnumerator EsperarYDetectarGolpe()
+    {
+        float timeout = 1.5f;
+        float transcurrido = 0f;
+
+        while (transcurrido < timeout)
+        {
+            AnimatorStateInfo estado = animator.GetCurrentAnimatorStateInfo(0);
+
+            if (estado.shortNameHash == golpeoStateHash && estado.normalizedTime >= porcentajeGolpe)
+            {
+                DetectarGolpeDeMano();
+                yield break;
+            }
+
+            transcurrido += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    private void DetectarGolpeDeMano()
+    {
+        Vector3 centro = transform.position + Vector3.up * 0.8f;
+        Collider[] cercanos = Physics.OverlapSphere(centro, alcanceGolpe);
+
+        float cosMedioAngulo = Mathf.Cos(anguloGolpe * 0.5f * Mathf.Deg2Rad);
+
+        foreach (Collider col in cercanos)
+        {
+            if (col.gameObject == gameObject) continue;
+            if (!col.CompareTag("Player")) continue;
+
+            Vector3 direccionGolpe = col.transform.position - transform.position;
+            direccionGolpe.y = 0;
+
+            if (direccionGolpe.sqrMagnitude < 0.0001f) continue;
+
+            direccionGolpe = direccionGolpe.normalized;
+
+            float dot = Vector3.Dot(transform.forward, direccionGolpe);
+            if (dot < cosMedioAngulo) continue;
+
+            Ragdoll ragdollDelOtro = col.GetComponentInParent<Ragdoll>();
+            if (ragdollDelOtro == null) continue;
+
+            ragdollDelOtro.SolicitarRagdoll(direccionGolpe * fuerzaRagdollGolpeo);
+        }
     }
 
     private void CameraRotation()
     {
         if (CinemachineCameraTarget == null) return;
 
-        // Leemos todos los estados posibles que bloquean la vista
         bool enPausa = FindAnyObjectByType<UIPauseManager>()?.IsPaused == true;
         bool enLobby = MatchManager.Instancia != null && MatchManager.Instancia.enLobby.Value;
         bool carreraTerminada = MatchManager.Instancia != null && MatchManager.Instancia.carreraFinalizada.Value;
 
-        // Anulamos la rotación si se cumple cualquiera de los tres
         if (enPausa || enLobby || carreraTerminada) 
         {
             return; 
@@ -396,7 +382,6 @@ public class controlar : NetworkBehaviour {
 
     public void LoadCheckPoint()
     {
-        // Desactivar físicas temporalmente al teletransportar previene bugs visuales
         rb.isKinematic = true; 
         transform.position = checkPoint;
         rb.isKinematic = false;
@@ -416,7 +401,7 @@ public class controlar : NetworkBehaviour {
             if (!slide)
             {
                 pushForce -= Time.deltaTime * delta;
-                pushForce = Mathf.Max(pushForce, 0); // Más limpio que el ternario
+                pushForce = Mathf.Max(pushForce, 0);
             }
             rb.AddForce(new Vector3(0, -gravity * masaRigidbody, 0));
         }
@@ -479,7 +464,8 @@ public class controlar : NetworkBehaviour {
     }
 	private void OnCollisionEnter(Collision collision)
     {
-        
+        if (!IsOwner) return;
+
         if (tienePoderDeEmpuje.Value)
         {
         Rigidbody otroRb = collision.collider.GetComponent<Rigidbody>();
