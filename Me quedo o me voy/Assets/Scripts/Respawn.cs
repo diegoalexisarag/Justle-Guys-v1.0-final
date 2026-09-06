@@ -3,29 +3,46 @@ using UnityEngine;
 public class PlayerRespawn : MonoBehaviour
 {
     [Header("Configuración de Reaparición")]
-    [SerializeField] private float limiteCaida = -10f;
+    [SerializeField] private float limiteCaida = -0.1f;
     [SerializeField] public Transform puntoDeReaparicion;
 
     private CharacterController characterController;
+    private Ragdoll ragdoll;
     private Vector3 posicionInicial;
 
     void Start()
     {
         characterController = GetComponent<CharacterController>();
+        ragdoll = GetComponent<Ragdoll>();
         posicionInicial = transform.position;
     }
 
     void Update()
     {
-        if (transform.position.y < limiteCaida)
+        float posicionY = ObtenerPosicionYActual();
+        if (posicionY < limiteCaida)
         {
             Reaparecer();
         }
+    }
+        private float ObtenerPosicionYActual()
+    {
+        if (ragdoll != null && ragdoll.EstaEnRagdoll && ragdoll.hips != null)
+        {
+            return ragdoll.hips.position.y;
+        }
+
+        return transform.position.y;
     }
 
     public void Reaparecer()
     {
         Vector3 posicionDestino = puntoDeReaparicion != null ? puntoDeReaparicion.position : posicionInicial;
+        
+        if (ragdoll != null)
+        {
+            ragdoll.ReubicarInmediato(posicionDestino);
+        }
 
         if (characterController != null)
         {

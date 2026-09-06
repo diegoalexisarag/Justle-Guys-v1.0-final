@@ -1585,6 +1585,7 @@
     <ProjectReference Include="Blocks.Sessions.csproj" />
     <ProjectReference Include="GameScripts.csproj" />
     <ProjectReference Include="Blocks.Common.csproj" />
+    <ProjectReference Include="BzKovSoft.RagdollHelper.Editor.csproj" />
     <ProjectReference Include="Blocks.Sessions.Common.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
