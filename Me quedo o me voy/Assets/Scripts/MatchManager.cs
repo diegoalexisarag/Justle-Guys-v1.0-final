@@ -34,6 +34,7 @@ public class MatchManager : NetworkBehaviour
         if (IsServer)
         {
             // El servidor escucha quién entra y quién sale
+            NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
             NetworkManager.Singleton.OnClientConnectedCallback += ActualizarContador;
             NetworkManager.Singleton.OnClientDisconnectCallback += ActualizarContador;
             jugadoresConectados.Value = 1; // Contamos al Host inmediatamente
@@ -51,6 +52,7 @@ public class MatchManager : NetworkBehaviour
     {
         if (IsServer)
         {
+            NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
             NetworkManager.Singleton.OnClientConnectedCallback -= ActualizarContador;
             NetworkManager.Singleton.OnClientDisconnectCallback -= ActualizarContador;
         }
@@ -130,5 +132,19 @@ public class MatchManager : NetworkBehaviour
             int segundos = Mathf.FloorToInt((float)tiempoRestante % 60);
             textoCronometro.text = string.Format("{0:00}:{1:00}", minutos, segundos);
         }
+    }
+    private void ApprovalCheck(
+        NetworkManager.ConnectionApprovalRequest request,
+        NetworkManager.ConnectionApprovalResponse response)
+    {
+        if (!enLobby.Value)
+        {
+            response.Approved = false;
+            response.Reason = "La partida ya comenzó.";
+            return;
+        }
+
+        response.Approved = true;
+        response.CreatePlayerObject = true;
     }
 }

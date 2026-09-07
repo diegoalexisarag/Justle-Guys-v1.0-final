@@ -24,7 +24,17 @@ public class MultiplayerManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        NetworkManager.Singleton.OnServerStarted += () =>
+        {
+            Debug.Log("=== NETWORK MANAGER: SERVER INICIADO ===");
+        };
 
+        NetworkManager.Singleton.OnClientStarted += () =>
+        {
+            Debug.Log("=== NETWORK MANAGER: CLIENTE INICIADO ===");
+        };
+
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         await InicializarServicios();
     }
 
@@ -63,10 +73,9 @@ public class MultiplayerManager : MonoBehaviour
 
             JoinCode = currentSession.Code;
 
-            Debug.Log("=================================");
             Debug.Log("PARTIDA CREADA");
             Debug.Log("CÓDIGO: " + JoinCode);
-            Debug.Log("=================================");
+
 
             await System.Threading.Tasks.Task.Yield();
 
@@ -95,10 +104,9 @@ public class MultiplayerManager : MonoBehaviour
             currentSession =
                 await MultiplayerService.Instance.JoinSessionByCodeAsync(codigo);
             JoinCode = codigo;
-            Debug.Log("=================================");
             Debug.Log("PARTIDA ENCONTRADA");
             Debug.Log("CÓDIGO: " + codigo);
-            Debug.Log("=================================");
+
         }
         catch (Exception e)
         {
@@ -108,7 +116,8 @@ public class MultiplayerManager : MonoBehaviour
 
     private void OnClientDisconnect(ulong clientId)
     {
-        Debug.LogError("=== CLIENTE DESCONECTADO === ID: " + clientId);
+        Debug.LogError("=== CLIENTE DESCONECTADO === ID: " + clientId +
+        " | Razón: " + NetworkManager.Singleton.DisconnectReason);
     }
 
     private void OnDestroy()

@@ -19,7 +19,6 @@ public class MainMenu : MonoBehaviour
 
     public void UnirsePartida()
     {
-        Debug.Log("BOTON UNIRSE FUNCIONA");
 
         string codigo = codigoInput.text;
 

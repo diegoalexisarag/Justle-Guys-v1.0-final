@@ -999,13 +999,13 @@ MonoBehaviour:
   m_OverrideSceneCullingMask: 6917529027641081856
   m_SceneIsLit: 1
   m_SceneLighting: 1
-  m_2DMode: 1
+  m_2DMode: 0
   m_isRotationLocked: 0
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 1039.6443, y: 530.8848, z: -4.538569}
+    m_Target: {x: 488.43228, y: 520.2628, z: 1.4713482}
     speed: 2
     m_Value: {x: 1039.6443, y: 530.8848, z: -4.538569}
   m_RenderMode: 0
@@ -1054,15 +1054,15 @@ MonoBehaviour:
     m_gridOpacity: 0.5
     m_NearestPlaneToHandleMode: 0
   m_Rotation:
-    m_Target: {x: 0, y: 0, z: 0, w: 1}
+    m_Target: {x: -0.13641638, y: 0.82569194, z: -0.22688594, w: -0.49839357}
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 570.90875
+    m_Target: 22.084785
     speed: 2
     m_Value: 570.90875
   m_Ortho:
-    m_Target: 1
+    m_Target: 0
     speed: 2
     m_Value: 1
   m_CameraSettings:

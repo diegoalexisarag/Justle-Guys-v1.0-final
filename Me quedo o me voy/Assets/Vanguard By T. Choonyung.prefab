@@ -160,6 +160,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9bd8d804feddd0c44a4b206440ae22d7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7851851568710021724}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9bd8d804feddd0c44a4b206440ae22d7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 101064845160369338}
   m_SourcePrefab: {fileID: 100100000, guid: 9bd8d804feddd0c44a4b206440ae22d7, type: 3}
 --- !u!1 &3856217376570336071 stripped
 GameObject:
@@ -228,7 +231,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2959609308
+  GlobalObjectIdHash: 1514798052
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -264,9 +267,9 @@ MonoBehaviour:
   fuerzaDeEmpuje: 55
   tienePoderDeEmpuje: 0
   audioSource: {fileID: 8403631680391956221}
-  sonidoBaile1: {fileID: 8300000, guid: 83d8a8848576c9d4587ac8321f09c007, type: 3}
-  sonidoBaile2: {fileID: 8300000, guid: 9a2d4226c3d5f0849a3fc4b2ad538d68, type: 3}
-  sonidoBaile3: {fileID: 8300000, guid: 8dc298329e389844aab20e7a9c78dff2, type: 3}
+  sonidoBaile1: {fileID: 0}
+  sonidoBaile2: {fileID: 0}
+  sonidoBaile3: {fileID: 0}
   walkSpeed: 3
   runSpeed: 6
   checkPoint: {x: 0, y: 0, z: 0}
@@ -540,6 +543,23 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 9
   AnimatorParametersExpanded: 0
+--- !u!114 &101064845160369338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3856217376570336071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkRigidbody
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkRigidbodyBaseExpanded: 0
+  UseRigidBodyForMotion: 0
+  AutoUpdateKinematicState: 1
+  AutoSetKinematicOnDespawn: 1
 --- !u!4 &4526075746381838845 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 9bd8d804feddd0c44a4b206440ae22d7, type: 3}

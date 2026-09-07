@@ -22,9 +22,6 @@ public class controlar : NetworkBehaviour {
 	private Rigidbody rb;
 	private Animator animator;
 	public AudioSource audioSource;
-	public AudioClip sonidoBaile1;
-    public AudioClip sonidoBaile2;
-    public AudioClip sonidoBaile3;
 
 	private bool isRunning;
 	private bool isMoving;
@@ -105,7 +102,12 @@ public class controlar : NetworkBehaviour {
     // Cursor.visible = false;
     // C    ursor.lockState = CursorLockMode.Locked;
     }
-	
+    public override void OnNetworkSpawn()
+    {
+        Debug.Log("PLAYER SPAWN - ClientID: " + OwnerClientId +
+                  " | IsOwner: " + IsOwner +
+                  " | IsServer: " + IsServer);
+    }
     void FixedUpdate()
     {
         if (!IsOwner) return;
@@ -279,29 +281,6 @@ public class controlar : NetworkBehaviour {
                 animator.SetTrigger(jumpHash);
             }
             
-            if (!isMoving)
-            {
-                if (Input.GetKeyDown(KeyCode.P)) {
-                    animator.SetTrigger(danceHash);
-                    audioSource.Stop();
-                    audioSource.clip = sonidoBaile1;
-                    audioSource.Play();
-                }
-                if (Input.GetKeyDown(KeyCode.I)) {
-                    animator.SetTrigger(dance01Hash);
-                    animator.SetTrigger(danceHash);
-                    audioSource.Stop();
-                    audioSource.clip = sonidoBaile2;
-                    audioSource.Play();
-                }
-                if (Input.GetKeyDown(KeyCode.O)) { 
-                    animator.SetTrigger(dance02Hash);
-                    animator.SetTrigger(danceHash);
-                    audioSource.Stop();
-                    audioSource.clip = sonidoBaile3;
-                    audioSource.Play();
-                }
-            }
         }
     }
     private bool EstaEnElSuelo()
