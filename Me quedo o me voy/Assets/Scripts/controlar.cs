@@ -31,7 +31,7 @@ public class controlar : NetworkBehaviour {
 
 	private float distanciaAlSuelo;
 
-	private bool canMove = true;
+	public bool canMove = true;
 	private bool estaAturdido = false;
 	private bool estuvoAturdido = false;
 	private float pushForce;

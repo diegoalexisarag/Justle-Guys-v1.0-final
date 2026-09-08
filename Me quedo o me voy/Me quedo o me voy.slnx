@@ -1,5 +1,6 @@
 ﻿<Solution>
   <Project Path="Blocks.Sessions.Common.csproj" />
+  <Project Path="BzKovSoft.RagdollHelper.Editor.csproj" />
   <Project Path="Tests.csproj" />
   <Project Path="GameScripts.csproj" />
   <Project Path="Blocks.Sessions.csproj" />
