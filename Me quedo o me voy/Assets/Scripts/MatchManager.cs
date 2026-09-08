@@ -16,6 +16,20 @@ public class MatchManager : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI textoContadorJugadores;
     [SerializeField] private Button botonEmpezar; // Solo el Host debe poder usarlo
 
+        [Header("UI de Victoria")]
+    [SerializeField] bool pantallaVictoriaMostrada = false;
+    [SerializeField] private GameObject panelGameOver; 
+    [SerializeField] private TextMeshProUGUI textoGanador; 
+    [SerializeField] private TextMeshProUGUI textoTiempoFinal; 
+
+    [Header("UI de Tiempo acabado")]
+    [SerializeField] bool pantallaTiempoAcabadoMostrada = false;
+    [SerializeField] private GameObject panelTiempoAcabado; 
+
+    public NetworkVariable<bool> carreraFinalizada = new NetworkVariable<bool>(false);
+    public NetworkVariable<ulong> idGanador = new NetworkVariable<ulong>(0);
+
+
     // Variables de estado sincronizadas
     public NetworkVariable<int> jugadoresConectados = new NetworkVariable<int>(0);
     public NetworkVariable<bool> enLobby = new NetworkVariable<bool>(true);
@@ -88,11 +102,37 @@ public class MatchManager : NetworkBehaviour
             carreraIniciada.Value = true;
         }
 
+        double tiempoRestante = tiempoFinCarrera.Value - tiempoActual;
+
+        if (IsServer && carreraIniciada.Value && !carreraFinalizada.Value && tiempoRestante <= 0)
+        {
+            carreraFinalizada.Value = true;
+            enLobby.Value = false; 
+        }
+
+
         ActualizarUI(tiempoActual);
     }
 
     private void ActualizarUI(double tiempoActual)
     {
+
+        if (carreraFinalizada.Value)
+        {   
+            if (tiempoFinCarrera.Value - tiempoActual <= 0)
+            {
+                MostrarPantallaTiempoAcabado();
+            }
+            else
+            {
+                MostrarPantallaVictoria();
+            }
+            return;
+        }
+        else
+        {
+            if (panelGameOver != null) panelGameOver.SetActive(false);
+        }
         // 1. Lógica del Panel de Espera
         if (panelLobby != null)
         {
@@ -125,14 +165,52 @@ public class MatchManager : NetworkBehaviour
         // 3. Lógica del Cronómetro Superior
         if (carreraIniciada.Value)
         {
-            double tiempoRestante = tiempoFinCarrera.Value - tiempoActual;
-            if (tiempoRestante <= 0) tiempoRestante = 0;
-
-            int minutos = Mathf.FloorToInt((float)tiempoRestante / 60);
-            int segundos = Mathf.FloorToInt((float)tiempoRestante % 60);
-            textoCronometro.text = string.Format("{0:00}:{1:00}", minutos, segundos);
+            textoCronometro.text = calcularTiempoRestante(tiempoActual);
         }
     }
+
+    public void DeclararGanador(ulong clientId)
+    {
+        if (IsServer)
+        {
+            idGanador.Value = clientId;
+            carreraFinalizada.Value = true;
+            enLobby.Value = false; 
+        }
+    }
+
+    private void MostrarPantallaVictoria()
+    {
+        double tiempoActual = NetworkManager.Singleton.ServerTime.Time;
+        panelGameOver.SetActive(true);
+        textoCronometro.gameObject.SetActive(false);
+        textoGanador.text = $"Ganador: Jugador {idGanador.Value}";
+        textoCronometro.gameObject.SetActive(false);
+
+        if (!pantallaVictoriaMostrada)
+        {
+            textoTiempoFinal.text = $"Tiempo restante: {calcularTiempoRestante(tiempoActual)}";
+        }
+
+        pantallaVictoriaMostrada = true;
+    }
+
+    private void MostrarPantallaTiempoAcabado()
+    {
+        panelTiempoAcabado.SetActive(true);
+        textoCronometro.gameObject.SetActive(false);
+        pantallaTiempoAcabadoMostrada = true;
+    }
+
+    private string calcularTiempoRestante(double tiempoActual){
+        double tiempoRestante = tiempoFinCarrera.Value - tiempoActual;
+        if (tiempoRestante <= 0) tiempoRestante = 0;
+
+        int minutos = Mathf.FloorToInt((float)tiempoRestante / 60);
+        int segundos = Mathf.FloorToInt((float)tiempoRestante % 60);
+        return string.Format("{0:00}:{1:00}", minutos, segundos);
+    }
+
     private void ApprovalCheck(
         NetworkManager.ConnectionApprovalRequest request,
         NetworkManager.ConnectionApprovalResponse response)
