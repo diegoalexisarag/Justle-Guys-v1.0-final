@@ -87,7 +87,7 @@ public class MatchManager : NetworkBehaviour
         {
             enLobby.Value = false;
             tiempoInicioCarrera.Value = NetworkManager.Singleton.ServerTime.Time + 3.0;
-            tiempoFinCarrera.Value = tiempoInicioCarrera.Value + 300.0;
+            tiempoFinCarrera.Value = tiempoInicioCarrera.Value + 301.0;
         }
     }
 
