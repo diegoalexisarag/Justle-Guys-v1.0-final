@@ -122,6 +122,18 @@ public class Ragdoll : NetworkBehaviour
             hips.linearVelocity = Vector3.zero;
             hips.angularVelocity = Vector3.zero;
         }
+        if (rbPrincipal != null)
+        {
+            rbPrincipal.linearVelocity = Vector3.zero;
+            rbPrincipal.angularVelocity = Vector3.zero;
+        }
+        ResetearAnimator();
+    }
+    private void ResetearAnimator()
+    {
+        if (animator == null) return;
+        animator.Rebind();
+        animator.Update(0f);
     }
 
     private void PonerRagdollKinematico(bool kinematico)
