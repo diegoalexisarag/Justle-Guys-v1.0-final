@@ -51,7 +51,6 @@ public class MecanicaSaltoTests
             rb.AddForce(new Vector3(0, -scriptControlar.gravity * rb.mass, 0));
             yield return new WaitForFixedUpdate();
         }
-
         Assert.IsTrue(rb.linearVelocity.y < 0f, "La gravedad no provocó el descenso del personaje.");
     }
 
