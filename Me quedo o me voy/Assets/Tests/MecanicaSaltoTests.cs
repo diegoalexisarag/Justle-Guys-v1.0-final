@@ -44,7 +44,9 @@ public class MecanicaSaltoTests
 
         Assert.IsTrue(rb.linearVelocity.y > 0f, "El personaje no elevó su trayectoria al saltar.");
 
-        for (int i = 0; i < 30; i++)
+        int pasosNecesarios = Mathf.CeilToInt(velocidadSaltoCalculada / (scriptControlar.gravity * Time.fixedDeltaTime)) + 5;
+
+        for (int i = 0; i < pasosNecesarios; i++)
         {
             rb.AddForce(new Vector3(0, -scriptControlar.gravity * rb.mass, 0));
             yield return new WaitForFixedUpdate();
