@@ -68,7 +68,11 @@ public class Ragdoll : NetworkBehaviour
 
         enRagdoll = true;
 
-        if (animator != null) animator.enabled = false;
+        if (animator != null)
+        {
+            animator.enabled = false;
+            ResetearAnimator();
+        }
         if (movimiento != null) movimiento.canMove = false;
         if (rbPrincipal != null) rbPrincipal.isKinematic = true;
         if (colPrincipal != null) colPrincipal.enabled = false;
@@ -101,7 +105,11 @@ public class Ragdoll : NetworkBehaviour
         if (colPrincipal != null) colPrincipal.enabled = true;
         if (rbPrincipal != null) rbPrincipal.isKinematic = false;
         if (movimiento != null) movimiento.canMove = true;
-        if (animator != null) animator.enabled = true;
+        if (animator != null)
+        {
+            ResetearAnimator();
+            animator.enabled = true;
+        }
 
         enRagdoll = false;
     }
