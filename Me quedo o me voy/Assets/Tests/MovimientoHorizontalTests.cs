@@ -45,7 +45,7 @@ public class MovimientoHorizontalTests
     // TC-MOV-01: Desplazamiento Dirección WASD
     // =========================================================================
     [UnityTest]
-    public IEnumerator TC_MOV_01_DesplazamientoDireccionWASD()
+    public IEnumerator CP01_DesplazamientoDireccionWASD()
     {
         float velocidad = scriptControlar.walkSpeed;
 
@@ -78,7 +78,7 @@ public class MovimientoHorizontalTests
     // TC-MOV-02: Transición de Velocidad Caminar / Correr
     // =========================================================================
     [UnityTest]
-    public IEnumerator TC_MOV_02_TransicionVelocidadCaminarCorrer()
+    public IEnumerator CP02_TransicionVelocidadCaminarCorrer()
     {
         float velocidadCaminar = scriptControlar.walkSpeed;
         float velocidadCorrer = scriptControlar.runSpeed;
@@ -104,7 +104,7 @@ public class MovimientoHorizontalTests
     // TC-MOV-03: Frenado e Inercia (Decay de Velocidad)
     // =========================================================================
     [UnityTest]
-    public IEnumerator TC_MOV_03_FrenadoEInerciaDecayVelocidad()
+    public IEnumerator CP03_FrenadoEInerciaDecayVelocidad()
     {
         // Impulsar al personaje
         rb.linearVelocity = Vector3.forward * scriptControlar.walkSpeed;
